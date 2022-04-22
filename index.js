@@ -138,10 +138,17 @@ const getFullCost = (cityType) => {
     }
 }
 
-const getDaysBetween = (date1, date2) => { // TODO
-    return 1; // testing
+const getDaysBetween = (dateString1, dateString2) => { // TODO
+    let date1 = new Date(dateString1);
+    let date2 = new Date(dateString2);
+    let diff = date2.getTime() - date1.getTime();
+    let days = diff / (1000 * 3600 * 24)
+    return days - 1; // do not count start or end date
 }
 
 const checkForGap = (date1, date2) => { // TODO
-    return 1; // testing
+    if (getDaysBetween(date1, date2) > 0) {
+        return true;
+    } 
+    else return false;
 }
