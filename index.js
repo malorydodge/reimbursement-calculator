@@ -9,7 +9,8 @@ const askQuestion = () => {
             choices: ['Set 1', 'Set 2', 'Set 3', 'Set 4']
         },]).then(answers => {
             console.info(sets[answers.set]);
-            calculateReimbursement(sets[answers.set]);
+            let reimbursement = calculateReimbursement(sets[answers.set]);
+            console.info("Reimbursement total: $", reimbursement)
             askQuestion();
         }
     );
