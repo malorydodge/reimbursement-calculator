@@ -1,0 +1,23 @@
+{
+  "name": "simple-thread-exercise",
+  "version": "1.0.0",
+  "description": "Reimbursement Calculator",
+  "main": "index.js",
+  "dependencies": {
+    "inquirer": "^8.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malorydodge/reimbursement-calculator.git"
+  },
+  "author": "malorydodge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/malorydodge/reimbursement-calculator/issues"
+  },
+  "homepage": "https://github.com/malorydodge/reimbursement-calculator#readme"
+}
