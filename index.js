@@ -22,55 +22,19 @@ const calculateReimbursement = (set) => { // creates list of dates to add, then 
     let dateList = [];
     for (let i = 0; i < set.length; i++) {
         let project = set[i];
-        let startDateToAdd = {
-            date: project.startDate,
-            type: 'Travel',
-            city: project.city,
-            isFirstInSequence: false
-        };
-        let lastInSetSingleDay = ((i === (set.length - 1)) && (project.startDate === project.endDate)); // is current date last in the set?        
+        let singleLastDay = ((i === (set.length - 1)) && (project.startDate === project.endDate)); // is current date last in the set?        
         if (i === 0) { // do not need to perform checks if date exists in dateList
-            startDateToAdd.isFirstInSequence = true;
-            dateList.push(startDateToAdd);
+            dateList = addStartDate(dateList, project, true, singleLastDay);
         } else { // need to perform checks if date exists in dateList
             let dateIndex = checkForDate(dateList, project.startDate);
             if (dateIndex !== -1) { // startDate exists in dateList
-                editDateList(dateList, dateIndex, project.city, lastInSetSingleDay); // startDate is last in set if equal to endDate
+                dateList = editDateList(dateList, dateIndex, project.city, singleLastDay); // startDate is last in set if equal to endDate
             } else { // startDate needs to be added to dateList
-                let mostRecentIndex = getMostRecentDate(dateList);
-                if (checkForGap(dateList[mostRecentIndex].date, project.startDate)) { // gap exists between most recent & current date
-                    startDateToAdd.isFirstInSequence = true;
-                    dateList.push(startDateToAdd);
-                } else { // no gap between most recent date and startDate
-                    if (!dateList[mostRecentIndex].isFirstInSequence) {
-                        dateList[mostRecentIndex].type = 'Full'; // set most recent date to full day - projects push up against each other
-                    }
-                    if (!lastInSetSingleDay) {
-                        startDateToAdd.type = 'Full';
-                    }
-                    dateList.push(startDateToAdd);
-                }
+                dateList = addStartDate(dateList, project, false, singleLastDay);
             }
         }
         if (project.startDate !== project.endDate) {
-            let fullDays = getDaysBetween(project.startDate, project.endDate); // days in middle of project are counted as full days
-            if (fullDays > 0) {
-                for (let j = 1; j <= fullDays; j++) {
-                    let currentDate = getDateToAdd(project.startDate, j);
-                    let currentDateIndex = checkForDate(dateList, currentDate);
-                    if (currentDateIndex !== -1) { // date exists in dateList
-                        editDateList(currentDateIndex, project.city, false);
-                    } else {
-                        let dateToAdd = {
-                            date: currentDate,
-                            type: 'Full',
-                            city: project.city,
-                            isFirstInSequence: false
-                        }
-                        dateList.push(dateToAdd);
-                    }
-                }
-            }
+            dateList = addFullDays(dateList, project);
             // add endDate to dateList
             let endDateToAdd = {
                 date: project.endDate,
@@ -163,6 +127,7 @@ const editDateList = (dateList, dateListIndex, projectCity, lastInSet) => { // c
             dateList[dateListIndex].type = 'Full';
         }
     }
+    return dateList;
 }
 
 const getDateListTotal = (dateList) => { // returns total calculated reimbursement
@@ -175,4 +140,53 @@ const getDateListTotal = (dateList) => { // returns total calculated reimburseme
         }
     }
     return reimbursement;
+}
+
+const addFullDays = (dateList, project) => {
+    let fullDays = getDaysBetween(project.startDate, project.endDate); // days in middle of project are counted as full days
+    if (fullDays > 0) {
+        for (let j = 1; j <= fullDays; j++) {
+            let currentDate = getDateToAdd(project.startDate, j);
+            let currentDateIndex = checkForDate(dateList, currentDate);
+            if (currentDateIndex !== -1) { // date exists in dateList
+                dateList = editDateList(currentDateIndex, project.city, false);
+            } else {
+                let dateToAdd = {
+                    date: currentDate,
+                    type: 'Full',
+                    city: project.city,
+                    isFirstInSequence: false
+                }
+                dateList.push(dateToAdd);
+            }
+        }
+    }
+    return dateList;
+}
+
+const addStartDate = (dateList, project, isFirstInSet, singleLastDay) => {
+    let startDateToAdd = {
+        date: project.startDate,
+        type: 'Travel',
+        city: project.city,
+        isFirstInSequence: false
+    };
+    if (!isFirstInSet) {
+        let mostRecentIndex = getMostRecentDate(dateList);
+        if (checkForGap(dateList[mostRecentIndex].date, project.startDate)) { // gap exists between most recent & current date
+            startDateToAdd.isFirstInSequence = true;
+        } else { // no gap between most recent date and startDate
+            if (!dateList[mostRecentIndex].isFirstInSequence) {
+                dateList[mostRecentIndex].type = 'Full'; // set most recent date to full day - projects push up against each other
+            }
+            if (!singleLastDay) {
+                startDateToAdd.type = 'Full';
+            }
+        }
+    }
+    else { // first date in set
+        startDateToAdd.isFirstInSequence = true;
+    }
+    dateList.push(startDateToAdd);
+    return dateList;
 }
